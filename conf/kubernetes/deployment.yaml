@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: sprinthive-kyc-bureau
+    version: v1
+  name: sprinthive-kyc-bureau-v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: sprinthive-kyc-bureau
+      version: v1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        run: sprinthive-kyc-bureau
+        version: v1
+    spec:
+      containers:
+      - image: gcr.io/jons-world/github-sprinthive-overlord-ui:1ac3210bb2a19292cd6cc68414b9a37834b386f0
+        imagePullPolicy: IfNotPresent
+        name: sprinthive-kyc-bureau
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
