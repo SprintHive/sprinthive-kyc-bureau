@@ -23,7 +23,7 @@ spec:
         version: v1
     spec:
       containers:
-      - image: gcr.io/jons-world/github-sprinthive-overlord-ui:1ac3210bb2a19292cd6cc68414b9a37834b386f0
+      - image: gcr.io/jons-world/github-sprinthive-sprinthive-kyc-bureau:d9276f14edcdc4bf999f88ddfb117d834dd5d93b
         imagePullPolicy: IfNotPresent
         name: sprinthive-kyc-bureau-v1
         resources: {}
