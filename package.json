@@ -1,0 +1,23 @@
+{
+  "name": "honeypot-bureau",
+  "version": "1.0.0",
+  "description": "Sprinthive's bureau service implementation.",
+  "main": "src/server.js",
+  "author": "Jon Lai Lam",
+  "license": "MIT",
+  "dependencies": {
+    "amqplib": "^0.5.2",
+    "axios": "^0.18.0",
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "redux": "^3.7.2",
+    "redux-observable": "^1.0.0-alpha.1",
+    "rxjs": "^5.5.8"
+  },
+  "scripts": {
+    "server": "nodemon src/server.js"
+  },
+  "devDependencies": {
+    "nodemon": "^1.17.3"
+  }
+}
