@@ -7,6 +7,10 @@ const {SEND_SUCCESS_MESSAGE_TO_RABBIT, SEND_NO_DATA_MESSAGE_TO_RABBIT, SEND_ERRO
 let channel;
 const rabbitUrl = process.env.rabbitUrl || 'amqp://user:guest@rabbitmq/';
 const exchangeName = "individual-profile-complete";
+const publishOptions = {
+  contentType: "application/json"
+};
+
 console.log(`Connecting to ${rabbitUrl} exchange: ${exchangeName}`);
 amqp.connect(rabbitUrl, function (err, conn) {
   console.log("Connected!");
@@ -59,7 +63,7 @@ const sendSuccessMessagesToRabbit = (action$) => {
         }
       };
 
-      channel.publish(exchangeName, "success", new Buffer(JSON.stringify(data)));
+      channel.publish(exchangeName, "success", new Buffer(JSON.stringify(data)), publishOptions);
       action.ack();
     })
     .mergeMap(() => Observable.empty());
@@ -79,7 +83,7 @@ const sendNoDataMessagesToRabbit = (action$) => {
         individualVerificationId,
       };
 
-      channel.publish(exchangeName, "no-data", new Buffer(JSON.stringify(data)));
+      channel.publish(exchangeName, "no-data", new Buffer(JSON.stringify(data)), publishOptions);
       action.ack();
     })
     .mergeMap(() => Observable.empty());
@@ -100,7 +104,7 @@ const sendErrorMessagesToRabbit = (action$) => {
         errorMessage: "The streams got crossed, never cross the streams!"
       };
 
-      channel.publish(exchangeName, "error", new Buffer(JSON.stringify(data)));
+      channel.publish(exchangeName, "error", new Buffer(JSON.stringify(data)), publishOptions);
       action.ack();
     })
     .mergeMap(() => Observable.empty());
