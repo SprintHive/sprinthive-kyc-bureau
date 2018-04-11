@@ -58,6 +58,7 @@ const sendSuccessMessagesToRabbit = (action$) => {
           alternateProviderIdentifyingNumber: "",
           firstName: ConsumerDetail.FirstName,
           middleNames: getMiddleNames(ConsumerDetail),
+          lastName: ConsumerDetail.LastName,
           dateOfBirth: ConsumerDetail.BirthDate,
           deceased: ConsumerFraudIndicatorsSummary.HomeAffairsDeceasedStatus === "Yes",
           verifiedWithHomeAffairs: ConsumerFraudIndicatorsSummary.HomeAffairsVerificationYN === "Yes"
