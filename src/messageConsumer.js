@@ -21,16 +21,17 @@ const listForRabbitMessages = () => {
         ch.assertQueue(queueName, {durable: false});
         ch.bindQueue(queueName, exchangeName, "attempt-0");
         ch.consume(queueName, function (msg) {
-          console.info("Received an individual request from the queue");
-
+          const individualVerificationRequest = JSON.parse(msg.content.toString());
+          const {individualVerificationId} = individualVerificationRequest;
+          console.info(`Received an individual request from the queue individualVerificationId: ${individualVerificationId}`);
           eventBus.next(individualProfileRequestReceived({
-            individualVerificationRequest: JSON.parse(msg.content.toString()),
+            individualVerificationRequest,
             nack: () => {
-              console.info("Message has been nacked (putting it back onto the queue)");
+              console.info(`Message has been nacked (putting it back onto the queue) individualVerificationId: ${individualVerificationId}`);
               ch.nack(msg, false, true)
             },
             ack: () => {
-              console.info("Message has been acked (processed successfully)");
+              console.info(`Message has been acked (processed successfully) individualVerificationId: ${individualVerificationId}`);
               ch.ack(msg);
             }
           }))

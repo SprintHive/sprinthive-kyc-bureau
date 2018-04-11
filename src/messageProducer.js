@@ -1,9 +1,8 @@
-import {logAction} from "./utils";
-
-require('dotenv').config();
-const amqp = require('amqplib/callback_api');
+require("dotenv").config();
+const amqp = require("amqplib/callback_api");
 const {Observable} = require("rxjs");
 
+const logAction = require("./utils");
 const {SEND_SUCCESS_MESSAGE_TO_RABBIT, SEND_NO_DATA_MESSAGE_TO_RABBIT, SEND_ERROR_MESSAGE_TO_RABBIT} = require("./actionFactory");
 
 let channel;
@@ -52,7 +51,7 @@ const sendSuccessMessagesToRabbit = (action$) => {
         dataSubProvider: "NONE",
         dateVerifiedWithHomeAffairs: new Date(),
         verifiedWithHomeAffairs: true,
-        dataProviderRequestId: Consumer.ReportInformation.ReportId,
+        dataProviderRequestId: Consumer.ReportInformation.ReportID,
         individualProfile: {
           identityType,
           providerIdentifyingNumber: ConsumerDetail.IDNo,
@@ -65,9 +64,7 @@ const sendSuccessMessagesToRabbit = (action$) => {
         }
       };
 
-      const msgJson = new Buffer(JSON.stringify(data));
-      console.log("Sending success message to rabbit", msgJson);
-      channel.publish(exchangeName, "success", new Buffer(msgJson), publishOptions);
+      channel.publish(exchangeName, "success", new Buffer(JSON.stringify(data)), publishOptions);
       action.ack();
     })
     .mergeMap(() => Observable.empty());
