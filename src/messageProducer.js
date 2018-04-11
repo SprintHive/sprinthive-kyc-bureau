@@ -1,3 +1,5 @@
+import {logAction} from "./utils";
+
 require('dotenv').config();
 const amqp = require('amqplib/callback_api');
 const {Observable} = require("rxjs");
@@ -37,8 +39,8 @@ const getMiddleNames = (ConsumerDetail) => {
 const sendSuccessMessagesToRabbit = (action$) => {
   return action$
     .ofType(SEND_SUCCESS_MESSAGE_TO_RABBIT)
+    .do(logAction)
     .do(action => {
-      console.log("Sending a message to success queue", action.payload);
       const {bureauResult, individualVerificationRequest} = action.payload;
       const {individualVerificationId, identityType} = individualVerificationRequest;
       const {Consumer} = bureauResult.payload;
@@ -63,7 +65,9 @@ const sendSuccessMessagesToRabbit = (action$) => {
         }
       };
 
-      channel.publish(exchangeName, "success", new Buffer(JSON.stringify(data)), publishOptions);
+      const msgJson = new Buffer(JSON.stringify(data));
+      console.log("Sending success message to rabbit", msgJson);
+      channel.publish(exchangeName, "success", new Buffer(msgJson), publishOptions);
       action.ack();
     })
     .mergeMap(() => Observable.empty());
