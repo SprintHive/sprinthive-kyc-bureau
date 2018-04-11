@@ -2,16 +2,17 @@ require("dotenv").config();
 const amqp = require("amqplib/callback_api");
 const {Observable} = require("rxjs");
 
-const logAction = require("./utils");
+const {logAction} = require("./utils");
 const {SEND_SUCCESS_MESSAGE_TO_RABBIT, SEND_NO_DATA_MESSAGE_TO_RABBIT, SEND_ERROR_MESSAGE_TO_RABBIT} = require("./actionFactory");
 
-let channel;
+// let channel;
 const rabbitUrl = process.env.rabbitUrl || 'amqp://user:guest@rabbitmq/';
 const exchangeName = "individual-profile-complete";
 const publishOptions = {
   contentType: "application/json"
 };
 
+/*
 console.log(`Connecting to ${rabbitUrl} exchange: ${exchangeName}`);
 amqp.connect(rabbitUrl, function (err, conn) {
   console.log("Connected!");
@@ -24,6 +25,7 @@ amqp.connect(rabbitUrl, function (err, conn) {
     });
   }
 });
+*/
 
 const getMiddleNames = (ConsumerDetail) => {
   if (ConsumerDetail.SecondName) {
@@ -35,11 +37,12 @@ const getMiddleNames = (ConsumerDetail) => {
   }
 };
 
-const sendSuccessMessagesToRabbit = (action$) => {
+const sendSuccessMessagesToRabbit = (action$, {rabbitConnection$}) => {
   return action$
     .ofType(SEND_SUCCESS_MESSAGE_TO_RABBIT)
     .do(logAction)
-    .do(action => {
+    .combineLatest(rabbitConnection$, (action, rabbitConnection) => ({action, rabbitConnection}))
+    .do(({action, rabbitConnection}) => {
       const {bureauResult, individualVerificationRequest} = action.payload;
       const {individualVerificationId, identityType} = individualVerificationRequest;
       const {Consumer} = bureauResult.payload;
@@ -65,17 +68,18 @@ const sendSuccessMessagesToRabbit = (action$) => {
         }
       };
 
-      channel.publish(exchangeName, "success", new Buffer(JSON.stringify(data)), publishOptions);
+      rabbitConnection.ch.publish(exchangeName, "success", new Buffer(JSON.stringify(data)), publishOptions);
       action.ack();
     })
     .mergeMap(() => Observable.empty());
 };
 
-const sendNoDataMessagesToRabbit = (action$) => {
+const sendNoDataMessagesToRabbit = (action$, {rabbitConnection$}) => {
   return action$
     .ofType(SEND_NO_DATA_MESSAGE_TO_RABBIT)
-    .do(action => {
-      console.log("Sending a message to no-data queue");
+    .do(logAction)
+    .combineLatest(rabbitConnection$, (action, rabbitConnection) => ({action, rabbitConnection}))
+    .do(({action, rabbitConnection}) => {
       const {individualVerificationRequest} = action.payload;
       const {individualVerificationId} = individualVerificationRequest;
 
@@ -85,17 +89,18 @@ const sendNoDataMessagesToRabbit = (action$) => {
         individualVerificationId,
       };
 
-      channel.publish(exchangeName, "no-data", new Buffer(JSON.stringify(data)), publishOptions);
+      rabbitConnection.ch.publish(exchangeName, "no-data", new Buffer(JSON.stringify(data)), publishOptions);
       action.ack();
     })
     .mergeMap(() => Observable.empty());
 };
 
-const sendErrorMessagesToRabbit = (action$) => {
+const sendErrorMessagesToRabbit = (action$, {rabbitConnection$}) => {
   return action$
     .ofType(SEND_ERROR_MESSAGE_TO_RABBIT)
-    .do(action => {
-      console.log("Sending a message to error queue");
+    .do(logAction)
+    .combineLatest(rabbitConnection$, (action, rabbitConnection) => ({action, rabbitConnection}))
+    .do(({action, rabbitConnection}) => {
       const {individualVerificationRequest} = action.payload;
       const {individualVerificationId} = individualVerificationRequest;
 
@@ -106,7 +111,7 @@ const sendErrorMessagesToRabbit = (action$) => {
         errorMessage: "The streams got crossed, never cross the streams!"
       };
 
-      channel.publish(exchangeName, "error", new Buffer(JSON.stringify(data)), publishOptions);
+      rabbitConnection.ch.publish(exchangeName, "error", new Buffer(JSON.stringify(data)), publishOptions);
       action.ack();
     })
     .mergeMap(() => Observable.empty());
