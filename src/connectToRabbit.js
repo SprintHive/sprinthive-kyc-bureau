@@ -9,6 +9,7 @@ const createChannel = (conn) =>
     .mergeMap(ch => Observable.of({conn, ch}));
 
 const rabbitConnection = Observable.fromPromise(amqp.connect(rabbitUrl))
-  .mergeMap(createChannel);
+  .mergeMap(createChannel)
+  .shareReplay(1);
 
 module.exports = rabbitConnection;
